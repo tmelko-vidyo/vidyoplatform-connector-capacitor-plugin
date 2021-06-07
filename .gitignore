@@ -9,6 +9,16 @@ lerna-debug.log*
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
+# Android
+
+android/.gradle
+android/.idea
+android/libs
+
+# iOS
+
+ios/VidyoClientIOS.framework
+
 # Runtime data
 pids
 *.pid
