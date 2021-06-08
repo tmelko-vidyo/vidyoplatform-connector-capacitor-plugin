@@ -17,6 +17,7 @@ export interface ConferenceOptions {
 
   maxParticipants: number;
   logLevel: string;
+  debug: boolean;
 }
 
 export interface PrivacyOptions {

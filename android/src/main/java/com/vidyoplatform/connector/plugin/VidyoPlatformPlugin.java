@@ -34,6 +34,13 @@ import com.vidyoplatform.connector.plugin.utils.Logger;
         })
 public class VidyoPlatformPlugin extends Plugin implements IPluginEventHandler {
 
+    private static final String PLUGIN_EVENT_CALLBACK = "VidyoEventCallback";
+    private static final String PLUGIN_EVENT_TYPE = "type";
+    private static final String PLUGIN_EVENT_STATUS = "status";
+    private static final String PLUGIN_EVENT_REASON = "reason";
+    private static final String PLUGIN_EVENT_ACTION = "action";
+    private static final String PLUGIN_EVENT_NAME = "name";
+
     private VideoFragment fragment;
 
     private final int containerViewId = 0x14;
@@ -54,8 +61,10 @@ public class VidyoPlatformPlugin extends Plugin implements IPluginEventHandler {
     @PluginMethod()
     public void connect(PluginCall call) {
         try {
-            fragment.connectOrDisconnect(true);
-            call.resolve();
+            if (fragment.connectOrDisconnect(true))
+                call.resolve();
+            else
+                call.reject("Failed");
         } catch (Exception e) {
             call.reject("Failed to connect");
         }
@@ -95,8 +104,10 @@ public class VidyoPlatformPlugin extends Plugin implements IPluginEventHandler {
     @PluginMethod()
     public void disconnect(PluginCall call) {
         try {
-            fragment.connectOrDisconnect(false);
-            call.resolve();
+            if (fragment.connectOrDisconnect(false))
+                call.resolve();
+            else
+                call.reject("Failed");
         } catch (Exception e) {
             call.reject("Failed to disconnect");
         }
@@ -108,8 +119,6 @@ public class VidyoPlatformPlugin extends Plugin implements IPluginEventHandler {
             FrameLayout containerView = getBridge().getActivity().findViewById(containerViewId);
             if (containerView != null) {
                 ((ViewGroup) getBridge().getWebView().getParent()).removeView(containerView);
-
-//                getBridge().getWebView().setBackgroundColor(Color.WHITE);
 
                 if (fragment != null) {
                     fragment.registerPluginEventHandler(null);
@@ -142,7 +151,9 @@ public class VidyoPlatformPlugin extends Plugin implements IPluginEventHandler {
         Integer maxParticipants = call.getInt("maxParticipants");
         String logLevel = call.getString("logLevel");
 
-        fragment = VideoFragment.open(portal, roomKey, pin, name, maxParticipants, logLevel);
+        Boolean debug = call.getBoolean("debug");
+
+        fragment = VideoFragment.open(portal, roomKey, pin, name, maxParticipants, logLevel, debug);
         fragment.registerPluginEventHandler(this);
 
         bridge.getActivity().runOnUiThread(() -> {
@@ -177,51 +188,51 @@ public class VidyoPlatformPlugin extends Plugin implements IPluginEventHandler {
     }
 
     @Override
-    public void onInitialized() {
+    public void onInitialized(boolean status) {
         JSObject notifyObj = new JSObject();
-        notifyObj.put("type", "init");
-        notifyObj.put("status", true);
-        notifyListeners("VidyoEventCallback", notifyObj);
+        notifyObj.put(PLUGIN_EVENT_TYPE, "init");
+        notifyObj.put(PLUGIN_EVENT_STATUS, status);
+        notifyListeners(PLUGIN_EVENT_CALLBACK, notifyObj);
     }
 
     @Override
     public void onConnected() {
         JSObject notifyObj = new JSObject();
-        notifyObj.put("type", "connected");
-        notifyListeners("VidyoEventCallback", notifyObj);
+        notifyObj.put(PLUGIN_EVENT_TYPE, "connected");
+        notifyListeners(PLUGIN_EVENT_CALLBACK, notifyObj);
     }
 
     @Override
     public void onDisconnected(String reason) {
         JSObject notifyObj = new JSObject();
-        notifyObj.put("type", "disconnected");
-        notifyObj.put("reason", reason);
-        notifyListeners("VidyoEventCallback", notifyObj);
+        notifyObj.put(PLUGIN_EVENT_TYPE, "disconnected");
+        notifyObj.put(PLUGIN_EVENT_REASON, reason);
+        notifyListeners(PLUGIN_EVENT_CALLBACK, notifyObj);
     }
 
     @Override
     public void onFailure(String reason) {
         JSObject notifyObj = new JSObject();
-        notifyObj.put("type", "failed");
-        notifyObj.put("reason", reason);
-        notifyListeners("VidyoEventCallback", notifyObj);
+        notifyObj.put(PLUGIN_EVENT_TYPE, "failed");
+        notifyObj.put(PLUGIN_EVENT_REASON, reason);
+        notifyListeners(PLUGIN_EVENT_CALLBACK, notifyObj);
     }
 
     @Override
     public void onParticipantJoined(Participant participant) {
         JSObject notifyObj = new JSObject();
-        notifyObj.put("type", "participant");
-        notifyObj.put("action", "joined");
-        notifyObj.put("name", participant.getName());
-        notifyListeners("VidyoEventCallback", notifyObj);
+        notifyObj.put(PLUGIN_EVENT_TYPE, "participant");
+        notifyObj.put(PLUGIN_EVENT_ACTION, "joined");
+        notifyObj.put(PLUGIN_EVENT_NAME, participant.getName());
+        notifyListeners(PLUGIN_EVENT_CALLBACK, notifyObj);
     }
 
     @Override
     public void onParticipantLeft(Participant participant) {
         JSObject notifyObj = new JSObject();
-        notifyObj.put("type", "participant");
-        notifyObj.put("action", "left");
-        notifyObj.put("name", participant.getName());
-        notifyListeners("VidyoEventCallback", notifyObj);
+        notifyObj.put(PLUGIN_EVENT_TYPE, "participant");
+        notifyObj.put(PLUGIN_EVENT_ACTION, "left");
+        notifyObj.put(PLUGIN_EVENT_NAME, participant.getName());
+        notifyListeners(PLUGIN_EVENT_CALLBACK, notifyObj);
     }
 }

@@ -33,6 +33,7 @@ npx cap sync
 * [`disconnect()`](#disconnect)
 * [`setPrivacy(...)`](#setprivacy)
 * [`cycleCamera()`](#cyclecamera)
+* [Interfaces](#interfaces)
 
 </docgen-index>
 
@@ -118,14 +119,15 @@ cycleCamera() => any
 
 #### ConferenceOptions
 
-| Prop                  | Type                |
-| --------------------- | ------------------- |
-| **`portal`**          | <code>string</code> |
-| **`roomKey`**         | <code>string</code> |
-| **`pin`**             | <code>string</code> |
-| **`name`**            | <code>string</code> |
-| **`maxParticipants`** | <code>number</code> |
-| **`logLevel`**        | <code>string</code> |
+| Prop                  | Type                 |
+| --------------------- | -------------------- |
+| **`portal`**          | <code>string</code>  |
+| **`roomKey`**         | <code>string</code>  |
+| **`pin`**             | <code>string</code>  |
+| **`name`**            | <code>string</code>  |
+| **`maxParticipants`** | <code>number</code>  |
+| **`logLevel`**        | <code>string</code>  |
+| **`debug`**           | <code>boolean</code> |
 
 
 #### PrivacyOptions

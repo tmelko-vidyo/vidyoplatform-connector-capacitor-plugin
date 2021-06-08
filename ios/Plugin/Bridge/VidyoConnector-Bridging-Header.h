@@ -8,6 +8,6 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import <Lmi/VidyoClient/VidyoConnector_Objc.h>
+#import <VidyoClientIOS.framework/Headers/Lmi/VidyoClient/VidyoConnector_Objc.h>
 
 #endif /* VidyoConnector_Bridging_Header_h */

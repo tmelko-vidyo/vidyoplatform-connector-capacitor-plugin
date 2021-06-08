@@ -4,7 +4,7 @@ import com.vidyo.VidyoClient.Endpoint.Participant;
 
 public interface IPluginEventHandler {
 
-    void onInitialized();
+    void onInitialized(boolean status);
 
     void onConnected();
 

@@ -36,8 +36,11 @@ public class VideoFragment extends Fragment implements Connector.IConnect,
 
     public static final String MAX_PARTICIPANTS = "max.key";
     public static final String LOG_LEVEL = "level.key";
+    public static final String IS_DEBUG = "is.debug.key";
 
-    public static VideoFragment open(String portal, String roomKey, String pin, String name, int max, String level) {
+    public static VideoFragment open(String portal, String roomKey, String pin, String name,
+                                     int max, String level,
+                                     boolean debug) {
         VideoFragment videoFragment = new VideoFragment();
 
         Bundle arg = new Bundle();
@@ -49,6 +52,8 @@ public class VideoFragment extends Fragment implements Connector.IConnect,
 
         arg.putInt(MAX_PARTICIPANTS, max);
         arg.putString(LOG_LEVEL, level);
+
+        arg.putBoolean(IS_DEBUG, debug);
 
         videoFragment.setArguments(arg);
         return videoFragment;
@@ -66,9 +71,11 @@ public class VideoFragment extends Fragment implements Connector.IConnect,
         this.pluginEventHandler = handler;
     }
 
-    public void connectOrDisconnect(boolean state) {
+    public boolean connectOrDisconnect(boolean state) {
         if (state) {
             Bundle arg = getArguments();
+            if (arg == null)
+                throw new IllegalArgumentException("Null arguments passed");
 
             String portal = arg.getString(PORTAL_KEY);
             String room = arg.getString(ROOM_KEY);
@@ -76,10 +83,13 @@ public class VideoFragment extends Fragment implements Connector.IConnect,
             String name = arg.getString(NAME_KEY);
 
             Logger.i("Start connection: %s, %s, %s, %s", portal, room, pin, name);
-            connector.connectToRoomAsGuest(portal, name, room, pin, this);
+            return connector.connectToRoomAsGuest(portal, name, room, pin, this);
         } else {
-            if (connector != null) connector.disconnect();
+            if (connector != null)
+                return connector.disconnect();
         }
+
+        return false;
     }
 
     public void setCameraPrivacy(boolean privacy) {
@@ -128,34 +138,47 @@ public class VideoFragment extends Fragment implements Connector.IConnect,
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        videoView = view.findViewById(R.id.video_frame);
+        boolean status;
+        try {
+            videoView = view.findViewById(R.id.video_frame);
 
-        Bundle arg = getArguments();
+            Bundle arg = getArguments();
+            if (arg == null)
+                throw new IllegalArgumentException("Null arguments passed");
 
             String logLevel = arg.getString(LOG_LEVEL, "debug@VidyoClient debug@VidyoConnector info warning");
-        int maxParticipants = arg.getInt(MAX_PARTICIPANTS);
+            int maxParticipants = arg.getInt(MAX_PARTICIPANTS);
 
-        connector = new Connector(videoView,
-                Connector.ConnectorViewStyle.VIDYO_CONNECTORVIEWSTYLE_Default,
-                maxParticipants,
-                logLevel,
-                "",
-                0);
+            boolean isDebug = arg.getBoolean(IS_DEBUG, false);
 
-        Logger.i("Connector instance has been created.");
+            connector = new Connector(videoView,
+                    Connector.ConnectorViewStyle.VIDYO_CONNECTORVIEWSTYLE_Default,
+                    maxParticipants,
+                    isDebug ? logLevel : "info@VidyoClient info@VidyoConnector info warning",
+                    "",
+                    0);
 
-        connector.registerLocalCameraEventListener(this);
-        connector.registerParticipantEventListener(this);
-        connector.reportLocalParticipantOnJoined(true);
+            Logger.i("Connector instance has been created.");
 
-        connector.registerLogEventListener(this, logLevel);
+            connector.registerLocalCameraEventListener(this);
+            connector.registerParticipantEventListener(this);
+            connector.reportLocalParticipantOnJoined(true);
 
-        /* Await view availability */
-        if (videoView != null && videoView.getViewTreeObserver() != null)
-            videoView.getViewTreeObserver().addOnGlobalLayoutListener(this);
+            if (isDebug)
+                connector.registerLogEventListener(this, logLevel);
+
+            /* Await view availability */
+            if (videoView != null && videoView.getViewTreeObserver() != null)
+                videoView.getViewTreeObserver().addOnGlobalLayoutListener(this);
+
+            status = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            status = false;
+        }
 
         if (pluginEventHandler != null)
-            pluginEventHandler.onInitialized();
+            pluginEventHandler.onInitialized(status);
     }
 
     @Override
