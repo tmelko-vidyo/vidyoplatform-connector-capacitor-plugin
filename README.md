@@ -1,6 +1,20 @@
-# vidyoplatform-connector-plugin
+# VidyoPlatform Capacitor Plugin
 
 Capacitor Plugin for VidyoPlatform Connector App
+
+### Clone 
+
+    $ git clone https://github.com/tmelko-vidyo/vidyoplatform-connector-plugin.git
+
+### Add VidyoClient SDK
+
+1. Download and unzip Android & iOS https://developer.vidyo.io/#/packages
+2. Copy /VidyoClient-AndroidSDK/lib/android content to /vidyoplatform-connector-plugin/android/lib/
+3. Copy /VidyoClient-iOSSDK/lib/ios/VidyoClientIOS.framework to /vidyoplatform-connector-plugin/ios
+4. Build plugin:
+
+       $ cd vidyoplatform-connector-plugin
+       $ npm run build
 
 ## Install
 
@@ -19,7 +33,6 @@ npx cap sync
 * [`disconnect()`](#disconnect)
 * [`setPrivacy(...)`](#setprivacy)
 * [`cycleCamera()`](#cyclecamera)
-* [Interfaces](#interfaces)
 
 </docgen-index>
 
@@ -123,3 +136,36 @@ cycleCamera() => any
 | **`privacy`** | <code>boolean</code> |
 
 </docgen-api>
+
+### Callback [Example]
+
+Common event name: *VidyoEventCallback*
+
+Response: [Object] with possible params:
+- type: even type to differentiate [init, connected, disconnected, failed, participant]
+- status: initialization status
+- reason: failed or disconnected reason
+- action: participant left or join action
+- name: participant name
+
+```
+  VidyoPluginListener.addListener('VidyoEventCallback', (info: any) => {
+      switch (info.type) {
+        case 'init':
+          console.log('Initialized: ' + info.status);
+          break;
+        case 'connected':
+          console.log('Connected to the conference!');
+          break;
+        case 'disconnected':
+          console.log('Disconnected: ' + info.reason);
+          break;
+        case 'failed':
+          console.log('Connection failed: ' + info.reason);
+          break;
+        case 'participant':
+          console.logx'Participant has: ' + info.action + ' with name ' + info.name);
+          break;
+      }
+
+```
