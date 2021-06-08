@@ -1,4 +1,4 @@
-# VidyoPlatform Capacitor Plugin
+# VidyoPlatform Capacitor Plugin [iOS PART NOT WORKING]
 
 Capacitor Plugin for VidyoPlatform Connector App
 
